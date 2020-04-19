@@ -90,13 +90,21 @@ func main() {
 			ppmMin := ppms[0]
 			ppmMax := ppms[len(ppms)-1]
 			ppmMedian := ppms[len(ppms)/2]
+			ppmAverage := 0
+			for i:=0; i<len(ppms);i++ {
+				ppmAverage+=ppms[i]
+			}
+			ppmAverage /= len(ppms)
+
+			// make ppms empty
 			ppms = []int{}
 
 			vr := sheets.ValueRange{Values: [][]interface{}{{
 				t.Format("2006/01/02 15:04:05"),
-				ppmMedian,
 				ppmMin,
 				ppmMax,
+				ppmAverage,
+				ppmMedian,
 			}}}
 			_, err = googleSrv.Spreadsheets.Values.Append(spreadSheetId, fmt.Sprintf("%s!A:A", spreadSheetName), &vr).ValueInputOption("RAW").Do()
 			if err != nil {
