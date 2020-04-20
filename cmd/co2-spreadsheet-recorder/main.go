@@ -106,7 +106,7 @@ func main() {
 				ppmAverage,
 				ppmMedian,
 			}}}
-			_, err = googleSrv.Spreadsheets.Values.Append(spreadSheetId, fmt.Sprintf("%s!A:A", spreadSheetName), &vr).ValueInputOption("RAW").Do()
+			_, err = googleSrv.Spreadsheets.Values.Append(spreadSheetId, fmt.Sprintf("%s!A:A", spreadSheetName), &vr).ValueInputOption("USER_ENTERED").Do()
 			if err != nil {
 				log.Fatal(err)
 			}
