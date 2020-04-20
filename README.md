@@ -29,6 +29,15 @@ To build it for Raspberry Pi
 GOOS=linux GOARCH=arm GOARM=7 go build
 ```
 
+### MQTT server
+
+Run mosquitto
+
+```sh
+sudo apt install mosquitto
+sudo systemctl start mosquitto
+```
+
 ## Run
 
 ```bash
