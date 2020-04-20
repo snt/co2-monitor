@@ -81,7 +81,7 @@ func main() {
 	ticker := time.NewTicker(time.Duration(recordInterval) * time.Second)
 	defer ticker.Stop()
 
-	ppms := []int{}
+	var ppms []int
 
 	for {
 		select {

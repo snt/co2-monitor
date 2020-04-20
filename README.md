@@ -1,11 +1,10 @@
-# CO2 monitor
+# CO<sub>2</sub> monitor
 
 Record CO2 ppm value from [MH-Z19b](https://www.winsen-sensor.com/d/files/infrared-gas-sensor/mh-z19b-co2-ver1_0.pdf) 
 via UART.
 
-* It prints out to stdout.
-* append to google spreadsheet
-* publish via MQTT topic
+* retrieve ppm value and publish it to MQTT topic
+* subscribe MQTT topic and append min/max/median/avg to google spreadsheet
 
 ## Setup
 
@@ -40,8 +39,16 @@ sudo systemctl start mosquitto
 
 ## Run
 
+### CO<sub>2</sub> monitor
+
 ```bash
-./co2-monitor -tick-seconds 60 -spreadsheet-id your-spreadsheet-id
+./co2-monitor
+```
+
+### spreadsheet recorder
+
+```bash
+./co2-spreadsheet-recorder -record-interval 300 -spreadsheet-id your-spreadsheet-id
 ```
 
 where `your-spreadsheet-id` is in the URL of Google spreadsheet.
