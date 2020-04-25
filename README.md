@@ -42,13 +42,13 @@ sudo systemctl start mosquitto
 ### CO<sub>2</sub> monitor
 
 ```bash
-./co2-monitor
+./co2-monitor sniff
 ```
 
 ### spreadsheet recorder
 
 ```bash
-./co2-spreadsheet-recorder -record-interval 300 -spreadsheet-id your-spreadsheet-id
+./co2-monitor recordSpreadsheet -record-interval 300 -spreadsheet-id your-spreadsheet-id
 ```
 
 where `your-spreadsheet-id` is in the URL of Google spreadsheet.
