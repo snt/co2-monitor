@@ -7,11 +7,12 @@ import (
 	"github.com/snt/co2-monitor/internal/model"
 	"github.com/spf13/cobra"
 	"golang.org/x/net/context"
-	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 	"io/ioutil"
 	"log"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -23,13 +24,14 @@ var recordSpreadsheet struct {
 	mqttTopic                string
 	recordInterval           int
 	doStdout                 bool
+	initialRow               string
 }
 
 var recordSpreadsheetCmd = &cobra.Command{
-Use:   "recordSpreadsheet",
-Short: "record co2 ppm to google spreadsheet",
-Long:  `record co2 ppm to google spreadsheet`,
-Run:   recordSpreadsheetFunc,
+	Use:   "recordSpreadsheet",
+	Short: "record co2 ppm to google spreadsheet",
+	Long:  `record co2 ppm to google spreadsheet`,
+	Run:   recordSpreadsheetFunc,
 }
 
 func init() {
@@ -40,6 +42,7 @@ func init() {
 	recordSpreadsheetCmd.Flags().StringVarP(&recordSpreadsheet.mqttTopic, "mqtt-topic", "t", "/co2/1", "mqtt topic name to subscribe")
 	recordSpreadsheetCmd.Flags().IntVarP(&recordSpreadsheet.recordInterval, "record-interval", "i", 300, "seconds between recording")
 	recordSpreadsheetCmd.Flags().BoolVar(&recordSpreadsheet.doStdout, "stdout", true, "print to stdout")
+	recordSpreadsheetCmd.Flags().StringVar(&recordSpreadsheet.initialRow, "initial-row", "1", "hint to insert new row to the spreadsheet. If you already have lots of rows, set it to avoid timeout of API.")
 	rootCmd.AddCommand(recordSpreadsheetCmd)
 }
 
@@ -49,13 +52,9 @@ var recordSpreadsheetFunc = func(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	conf, err := google.JWTConfigFromJSON(secret, sheets.SpreadsheetsScope)
-	if err != nil {
-		log.Fatal(err)
-	}
+	clientOption := option.WithCredentialsJSON(secret)
+	googleSrv, err := sheets.NewService(context.Background(), clientOption)
 
-	googleClient := conf.Client(context.Background())
-	googleSrv, err := sheets.New(googleClient)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -89,6 +88,7 @@ var recordSpreadsheetFunc = func(cmd *cobra.Command, args []string) {
 
 	var ppms []int
 
+	updateRow := recordSpreadsheet.initialRow
 	for {
 		select {
 		case t := <-ticker.C:
@@ -112,10 +112,12 @@ var recordSpreadsheetFunc = func(cmd *cobra.Command, args []string) {
 				ppmAverage,
 				ppmMedian,
 			}}}
-			_, err = googleSrv.Spreadsheets.Values.Append(recordSpreadsheet.spreadSheetId, fmt.Sprintf("%s!A:A", recordSpreadsheet.spreadSheetName), &vr).ValueInputOption("USER_ENTERED").Do()
+			x, err := googleSrv.Spreadsheets.Values.Append(recordSpreadsheet.spreadSheetId, fmt.Sprintf("%s!A%s:A%s", recordSpreadsheet.spreadSheetName, updateRow, updateRow), &vr).ValueInputOption("USER_ENTERED").Do()
 			if err != nil {
 				log.Fatal(err)
 			}
+			//fmt.Printf("updated range: %v", x.TableRange)
+			updateRow = strings.Split(x.TableRange, ":E")[1]
 
 		case m := <-co2Ch:
 			ppms = append(ppms, m.CO2ppm)
