@@ -32,12 +32,12 @@ func init() {
 	sniffCmd.Flags().IntVarP(&sniff.serialBaudRate, "baud-rate", "b", 9600, "baud rate")
 	sniffCmd.Flags().StringVarP(&sniff.mqttBroker, "mqtt-broker", "m", "tcp://localhost:1883", "mqtt broker url")
 	sniffCmd.Flags().StringVarP(&sniff.mqttTopic, "mqtt-topic", "t", "/co2/1", "mqtt topic name to publish")
-	sniffCmd.Flags().IntVarP(&sniff.sampleInterval, "sample-interval", "i", 1, "seconds between sampling")
+	sniffCmd.Flags().IntVarP(&sniff.sampleInterval, "sample-interval", "i", 5, "seconds between sampling")
 	sniffCmd.Flags().BoolVar(&sniff.doStdout, "stdout", false, "print to stdout")
 	rootCmd.AddCommand(sniffCmd)
 }
 
-var sniffFunc = func(cmd *cobra.Command, args []string) {
+func sniffFunc(_ *cobra.Command, _ []string) {
 	ticker := time.NewTicker(time.Duration(sniff.sampleInterval) * time.Second)
 	defer ticker.Stop()
 
